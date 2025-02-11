@@ -1,0 +1,21 @@
+.item{
+    display: flex;
+}
+.item-box{
+    margin-right: 20px;
+    width: 33%
+}
+.row2{
+    margin-top: 20px;
+    margin-right: 20px;
+    width: 50%
+}
+.box-cr{
+    height: 80vh;
+}
+.rfp-cr{
+    display: flex;
+    position: fixed;
+    top: 80%;
+    left: 85%;
+}
