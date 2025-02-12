@@ -2,6 +2,8 @@ import React from 'react'
 import { useState,useEffect } from 'react';
 import './VendorList.css'
 import { Link, useNavigate } from 'react-router-dom';
+import { getFetch } from '../../Methods/FetchMethods';
+import { EndPoints } from '../Constants/APIendpoints';
 const RFPList = () => {
   const navigate=useNavigate();
  const [rfpList, setrfpList] = useState([]);
@@ -11,17 +13,8 @@ const RFPList = () => {
           */
         const token=localStorage.getItem("Token");
          const fetchRFP = async () => {
-           console.log(token);
            try {
-             const response = await fetch("https://rfpdemo.velsof.com/api/rfp/all",
-               {
-                 method: "GET", 
-                 headers: {
-                   "Content-Type": "application/json",
-                   "Authorization": `Bearer ${token}` 
-                 }
-               }
-             );
+             const response =await getFetch(EndPoints?.RFPlist);
              const data = await response.json();
              setrfpList(Object.values(data?.rfps));
            } catch (error) {
@@ -32,6 +25,21 @@ const RFPList = () => {
          useEffect(() => {
            fetchRFP();
          }, []);
+         const handleClose=async(rfp_id)=>{
+          try {
+            const response = await getFetch(`${EndPoints?.CloseRFP}${rfp_id}`)
+            const data = await response.json();
+            if (data.response === "success") {
+              alert("Close successfully!");
+        
+              fetchRFP();
+          } else {
+              alert(data.error);
+          }
+          } catch (error) {
+            console.error("Error fetching vendor data:", error);
+          }
+         }
      return (
          <div className="main-content">
            <div className="path">
@@ -43,7 +51,7 @@ const RFPList = () => {
            <div className="Table">
             <div className="table-head">
              <h3 style={{ marginLeft: '20px' }}>RFP</h3>
-            <Link style={{marginRight:'17px'}} to="/admin/RFPselectcategory">
+            <Link style={{marginRight:'17px'}} to="/admin/rfp-select-category">
             <button className='add'>+ Add RFP</button>
             </Link>
             </div>
@@ -71,14 +79,14 @@ const RFPList = () => {
                <td className='td-v' >{rfp?.maximum_price}</td>
                <td className='td-v' >
                  <span className={`status ${rfp.status?.toLowerCase()}`}>
-                   {rfp.status?.toUpperCase()}
+                   {rfp.status==="open"?"OPENED":"CLOSED"}
                  </span>
                </td>
                <td className='td-v' >
-                 {rfp.status === "applied" && (
+                 {rfp.status === "open" && (
                   <>
-                   <button className="approve-btn">close</button>
-                   <Link to="/admin/RFPquotes">
+                   <button className="approve-btn" onClick={()=>handleClose(rfp?.rfp_id)}>close</button>
+                   <Link to="/admin/rfp-quotes">
                    <button className="approve-btn" onClick={()=>{localStorage.setItem("rfp_id_",rfp?.rfp_id);localStorage.setItem("quantity",rfp?.quantity)}} >quotes</button>
                    </Link>
                   </>

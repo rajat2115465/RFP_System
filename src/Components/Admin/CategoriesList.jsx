@@ -2,31 +2,39 @@ import React from 'react'
 import { useEffect,useState } from 'react';
 import './VendorList.css'
 import { Link } from 'react-router-dom';
+import { getFetch, postFetch } from '../../Methods/FetchMethods';
+import { alertMessage, clientSideValidation, EndPoints } from '../Constants/APIendpoints';
+/**
+ * Display Category List Method
+ * @returns 
+ */
 const CategoriesList = () => {
-    
-    const token=localStorage.getItem("Token");
     const [Categories, setCategories] = useState([]);
     const [showCard, setShowCard] = useState();
-    const fetchCategory=() => {
+    const fetchCategory=async() => {
        /**
-   * get category list
-   * @param {*} id 
-   */
-      fetch("https://rfpdemo.velsof.com/api/categories")
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.categories) {
-              const activeCategories = Object.values(data.categories);
-              setCategories(activeCategories);
-            }
-        })
-        .catch((error) => console.error("Error fetching categories:", error));
+       * get category list
+       * @param {*} id 
+       */
+     try {
+        const response = await getFetch(EndPoints.categoryList);
+        const data = await response.json();
+        if (data.categories) {
+          const activeCategories = Object.values(data.categories);
+          setCategories(activeCategories);
+        }
+        }
+        catch (error) {
+          console.error("Error fetching categories:", error)
+        }
     }
-      useEffect(fetchCategory, []);
+      useEffect(() => {
+        fetchCategory()
+      }, []);
             const [categoryName, setCategoryName] = useState("");
             const handleUpdate = async (id) => {
               if (!categoryName.trim()) {
-                alert("Please enter a category name.");
+                alert(clientSideValidation.category);
                 return;
               }
               /**
@@ -35,18 +43,10 @@ const CategoriesList = () => {
                * method:"post"
                */
               try {
-                const response = await fetch(`https://rfpdemo.velsof.com/api/categories/${id}`, {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}` 
-                  },
-                  body: JSON.stringify({ name: categoryName,_method:'put' }) 
-                });
+                const response=await postFetch(`${EndPoints.categoryById}${id}`,{ name: categoryName,_method:'put' })
                 const result = await response.json();
-                console.log("Update Response:", result);
                 if (result.response === "success") {
-                  alert("Category updated successfully!");
+                  alert(alertMessage.updatecategory);
               } else {
                   alert(result.error);
               }
@@ -54,7 +54,7 @@ const CategoriesList = () => {
                 setShowCard(false);
                 fetchCategory();
               } catch (error) {
-                console.error("Error updating category:", error);
+                alert(alertMessage.tryAgain)
               }
             };
     return (

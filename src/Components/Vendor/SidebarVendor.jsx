@@ -6,8 +6,8 @@ const SidebarVendor = () => {
         <div className="sidebar">
           <h2>Velocity</h2>
           <ul>
-            <Link to="/"><li><a href="#">Dashboard</a></li></Link>
-            <Link to="/RFPQuotes"><li><a href="#">RFP Quotes</a></li></Link>
+            <Link to="/"><li>Dashboard</li></Link>
+            <Link to="/rfp-quotes"><li>RFP Quotes</li></Link>
           </ul>
         </div>
       );
