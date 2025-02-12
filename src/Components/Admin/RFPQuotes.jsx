@@ -1,5 +1,7 @@
 import React from 'react'
 import { useEffect,useState } from 'react';
+import { getFetch } from '../../Methods/FetchMethods';
+import { EndPoints } from '../Constants/APIendpoints';
 const RFPQuotes = () => {
   const [rfpQuotes, setrfpQuotes] = useState([]);
   const token=localStorage.getItem("Token");
@@ -11,19 +13,9 @@ const RFPQuotes = () => {
            * Get Quotes for Particular RFP_Id
            * Authentication is Reuired(Token)
            */
-                   console.log(token);
                    try {
-                     const response = await fetch(`https://rfpdemo.velsof.com/api/rfp/quotes/${rfp_id}`,
-                       {
-                         method: "GET", 
-                         headers: {
-                           "Content-Type": "application/json",
-                           "Authorization": `Bearer ${token}` 
-                         }
-                       }
-                     );
+                    const response = await getFetch(`${EndPoints?.RFPQuotesByID}${rfp_id}`)
                      const data = await response.json();
-                     console.log(data);
                      setrfpQuotes(Object.values(data?.quotes));
                    } catch (error) {
                      console.error("Error fetching vendor data:", error);

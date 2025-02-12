@@ -2,10 +2,9 @@ import React, { useState,useEffect } from 'react'
 import './RFPCreate.css'
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
-const RFPCreate = () => {
-  const token=localStorage.getItem("Token");
-    const category=localStorage.getItem("category_id");
-    const user_id=localStorage.getItem("user_id");
+import { getFetch, postFetch } from '../../Methods/FetchMethods';
+import { alertMessage, clientSideValidation, EndPoints, storage } from '../Constants/APIendpoints';
+const RFPCreate = () => {   
     const navigate=useNavigate();
     const [formData, setFormData] = useState({
         name: "",
@@ -20,9 +19,7 @@ const RFPCreate = () => {
     });
     const filterVendorsByCategory=(vendors, categoryId)=> {
       return vendors.filter(vendor => {
-        console.log(vendor);
           const categories = vendor.categories.split(',').map(id => parseInt(id));  
-          console.log(categories);
           return categories.includes(categoryId);  
       });
   }
@@ -30,22 +27,14 @@ const RFPCreate = () => {
      /**
       * Fetch VendorList
       */
+     const category_id=localStorage.getItem(storage.category_id);
      const fetchVendors = async () => {
       try {
-        const response = await fetch("https://rfpdemo.velsof.com/api/vendorlist",
-          {
-            method: "GET", 
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}` 
-            }
-          }
-        );
+        const response=await getFetch(EndPoints.vendorList);
         const data = await response.json();
         setVendor(Object.values(data.vendors));
-        const filteredVendors = await filterVendorsByCategory(data.vendors,parseInt(category));
+        const filteredVendors = await filterVendorsByCategory(data.vendors,parseInt(category_id));
         setVendor(filteredVendors);
-        console.log("This"+Vendors);
       } catch (error) {
         console.error("Error fetching vendor data:", error);
         setVendor([]);
@@ -67,14 +56,16 @@ const RFPCreate = () => {
         */
         const validate = () => {
             let newErrors = {};
-            if (!formData.rfp_no.trim()) newErrors.rfp_no = "RFP No. is required";
-            if (!formData.name.trim()) newErrors.name = "Item name is required";
-            if (!formData.description.trim()) newErrors.description = "Item description is required";
-            if (!formData.quantity.trim() || formData.quantity<0 ) newErrors.quantity = "Quantity is required";
-            if (!formData.date.trim()) newErrors.date = "Last date is required";
-            if (!formData.minprice.trim() || formData.minprice<0) newErrors.minprice = "Minimum price is required";
-            if (!formData.maxprice.trim() || formData.maxprice<0) newErrors.maxprice = "Maximum price is required";
-            if (selectedVendors.length === 0)  newErrors.selectedoption = "Vendor is required";
+            const currentDate = new Date().toISOString().split("T")[0];
+            if (!formData.rfp_no.trim()) newErrors.rfp_no =clientSideValidation.rfpno ;
+            if (!formData.name.trim()) newErrors.name =clientSideValidation.itemname ;
+            if (!formData.description.trim()) newErrors.description =clientSideValidation.itemdescription ;
+            if (!formData.quantity.trim() || formData.quantity<0 ) newErrors.quantity =clientSideValidation.quantity ;
+            if (!formData.date.trim() || formData.date < currentDate) newErrors.date =clientSideValidation.lastdate ;
+            // if(formData.date < currentDate)newErrors.date =clientSideValidation.greater ;
+            if (!formData.minprice.trim() || formData.minprice<0) newErrors.minprice =clientSideValidation.minprice ;
+            if (!formData.maxprice.trim() || formData.maxprice<0) newErrors.maxprice =clientSideValidation.maxprice ;
+            if (selectedVendors.length === 0)  newErrors.selectedoption =clientSideValidation.vendor ;
             setErrors(newErrors);
             return Object.keys(newErrors).length === 0;
           };
@@ -86,45 +77,39 @@ const RFPCreate = () => {
      *
      * @returns 
      */
-const handleSubmit = (e) => {
+const handleSubmit = async(e) => {
     e.preventDefault();
     if (!validate()) return;
   
     const data = {
-      user_id: user_id,
+      user_id: storage.user_id,
       item_name: formData["name"],
       rfp_no: formData["rfp_no"],
       quantity: formData["quantity"],
       last_date: formData["date"],
       minimum_price: formData["minprice"],
       maximum_price: formData["maxprice"],
-      categories: category,
+      categories: category_id,
       vendors: formData["vendor"],
       item_description: formData["description"]
   };
- 
-    fetch("https://rfpdemo.velsof.com/api/createrfp", {
-        method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}` 
-          },
-        body: JSON.stringify(data),
-    })
-        .then((response) => response.json())
-        .then((data) => {
-        if (data.response === "success") {
-            alert("RFP Create successful!");
-            navigate("/admin/RFPList");
-        } else {
-            alert(data.error);
-        }
-        })
-        .catch(() => alert("An error occurred. Please try again."));
+   try{
+               const fetch=await postFetch(EndPoints?.createRfp,data)
+               const res=await fetch.json();
+               if (res?.response === "success") {
+                alert(alertMessage.rfp);
+                navigate("/admin/rfp-list");
+            } else {
+                alert(res?.error);
+            }
+             }catch(error){
+             alert(alertMessage.tryAgain);
+             }
+    
     };
     const handleCancel = (e) => {
     e.preventDefault(); 
-    alert("Form reset or redirect logic here");
+    navigate("/admin/rfp-list");
     };
   const [selectedVendors, setSelectedVendors] = useState([]);
   

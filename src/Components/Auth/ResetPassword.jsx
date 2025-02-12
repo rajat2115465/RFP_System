@@ -3,6 +3,8 @@ import { useState,useEffect } from 'react';
 import "./Login.css"
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import { alertMessage, clientSideValidation, EndPoints, Regex } from '../Constants/APIendpoints';
+import { postFetch } from '../../Methods/FetchMethods';
 const Reset = () => {
 const navigate=useNavigate();
     const [formData, setFormData] = useState({
@@ -12,61 +14,44 @@ const navigate=useNavigate();
       });
       const [error, setError] = useState({ email: "", password: "",otp:"" });
     
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      const handleChange = (e) => {
+      const handleChange = async(e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
       };
-    
-      const handleSubmit = (e) => {
+      const handleSubmit =async (e) => {
         e.preventDefault();
         let isValid = true;
         let newErrors = { email: "", password: "",otp:"" };
-        
-        if (!emailRegex.test(formData.email)) {
-          newErrors.email = "*Invalid Email";
+        if (!Regex.email.test(formData.email)) {
+          newErrors.email = clientSideValidation.email;
           isValid = false;
         }
-        if (!passwordRegex.test(formData.new_password)) {
-            newErrors.password = "*Invalid Password (e.g Pas@1234)";
+        if (!Regex.password.test(formData.new_password)) {
+            newErrors.password = clientSideValidation.password;
             isValid = false;
           }
-          if (formData.otp.length != 4) {
-            newErrors.otp = "*Invalid OTP";
-            isValid = false;
-          }
-    
+        if (formData.otp.length != 4) {
+          newErrors.otp = clientSideValidation.otp;
+          isValid = false;
+        }
         if (!isValid) {
           setError(newErrors);
           return;
         }
-    
         setError({ email: "", password: "" });
-        
-        fetch("https://rfpdemo.velsof.com/api/confirmotpresetPassword", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.response === "success") {
-              console.log("Success:", data);
-              alert("Password Reset successful!");
+         try {
+              const fetch = await postFetch(EndPoints.reset,formData)
+              const res = await fetch.json();
+              if (res?.response === "success") {
+                alert(alertMessage.reset);
                 navigate("/login");
-            } else {
-              alert("Incorrect OTP!");
+              } else {
+                alert(res?.message);
+              }
+            } catch (error) {
+              alert(alertMessage.tryAgain);
             }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            alert("Please try again.");
-          });
-      };
-   
+          }
   return (
    <div  >
     <div className="container">
@@ -112,11 +97,11 @@ const navigate=useNavigate();
         
         <br />
         <div className="btn">
-          <button type="submit" id="btn-1">Send OTP</button>
+          <button type="submit" id="btn-1">Submit</button>
         </div>
         <br />
         <div className="b">
-        <Link to="/vendorRegistration" className="vendor" >Register as Vendor</Link>
+        <Link to="/vendor-registration" className="vendor" >Register as Vendor</Link>
         </div>
       </form>
     </div>

@@ -2,6 +2,11 @@ import React from 'react'
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import ProtectedRoute from '../Auth/ProtectedRoute';
+/**
+ * Common Layout for all the pages of admin
+ * @param {*} param0 
+ * @returns 
+ */
 const AdminLayout = ({children}) => {
     return (
         <ProtectedRoute>

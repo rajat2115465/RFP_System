@@ -2,6 +2,8 @@ import React from 'react'
 import { useState,useEffect} from 'react'
 import './vendorRegistration.css'
 import { useNavigate } from 'react-router-dom';
+import { alertMessage, clientSideValidation, EndPoints, Regex } from '../Constants/APIendpoints';
+import { baseUrl, getFetch } from '../../Methods/FetchMethods';
 
 const VendorRegistration = () => {
   const navigate=useNavigate();
@@ -24,17 +26,22 @@ const VendorRegistration = () => {
     /**
      * Get all CAtegories for selecting category at the time of registration
      */
-      useEffect(() => {
-        fetch("https://rfpdemo.velsof.com/api/categories")
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.categories) {
-                const activeCategories = Object.values(data.categories).filter((cat) => cat.status === "Active");
-                setCategories(activeCategories);
-              }
-          })
-          .catch((error) => console.error("Error fetching categories:", error));
-      }, []);
+    const fetchCategory=async() => {
+    try {
+       const response = await getFetch(EndPoints.categoryList);
+       const data = await response.json();
+       if (data.categories) {
+         const activeCategories = Object.values(data.categories);
+         setCategories(activeCategories);
+       }
+       }
+       catch (error) {
+         console.error("Error fetching categories:", error)
+       }
+   }
+     useEffect(() => {
+       fetchCategory()
+     }, []);
       const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -49,19 +56,19 @@ const VendorRegistration = () => {
        */
       const validate = () => {
         let newErrors = {};
-        if (!formData.fname.trim()) newErrors.fname = "First name is required";
-        if (!formData.lname.trim()) newErrors.lname = "Last name is required";
-        if (!formData.revenue.trim() || !formData.revenue.match(/^\d+,\d+,\d+$/)) newErrors.revenue = "Last 3year revenue is required(e.g.,100,100,100)";
-        if (!formData.employees.trim() || formData.employees<0) newErrors.employees = "Number of Employees is required";
-        if (!formData.cpassword.trim()) newErrors.cpassword = "Confirm Password is required";
-        if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) newErrors.email = "Enter a valid email address";
-        if (!formData.password.match(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/))
-          newErrors.password = "Enter a valid Password.(e.g., Pass@123)";
-        if (formData.password !== formData.cpassword) newErrors.cpassword = "Passwords do not match";
-        if (!formData.gst.match(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/)) newErrors.gst = "Enter a valid GST No.(e.g., 22AAAAA1234A1Z5)";
-        if (!formData.pan.match(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/)) newErrors.pan = "Enter a valid PAN No. (e.g., AAAAA1234A)";
-        if (!formData.phone.match(/^\d{10}$/)) newErrors.phone = "Phone must be 10 digits";
-        if (!formData.category) newErrors.category = "Category is required";
+        if (!formData.fname.trim()) newErrors.fname = clientSideValidation.firstName;
+        if (!formData.lname.trim()) newErrors.lname = clientSideValidation.lastName;
+        if (!formData.revenue.trim() || !formData.revenue.match(Regex?.revenue)) newErrors.revenue = clientSideValidation.revenue;
+        if (!formData.employees.trim() || formData.employees<0) newErrors.employees = clientSideValidation.noOfEmployee;
+        if (!formData.cpassword.trim()) newErrors.cpassword = clientSideValidation.cpassword;
+        if (!formData.email.match(Regex.email)) newErrors.email = clientSideValidation.email;
+        if (!formData.password.match(Regex.password))
+          newErrors.password = clientSideValidation.password;
+        if (formData.password !== formData.cpassword) newErrors.cpassword = clientSideValidation.passwordMatch;
+        if (!formData.gst.match(Regex.gst)) newErrors.gst = clientSideValidation.gst;
+        if (!formData.pan.match(Regex.pan)) newErrors.pan = clientSideValidation.pan;
+        if (!formData.phone.match(Regex.mobile)) newErrors.phone = clientSideValidation.mobile;
+        if (!formData.category) newErrors.category = clientSideValidation.category;
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
       };
@@ -85,7 +92,7 @@ const VendorRegistration = () => {
          * firstname,lastname,email,password,revenue,revenue(last 3 yaers),no_of_employes,category,pancard_no,gst_no,mobile
          * this field is mandatory for successfully hit the API
          */
-        fetch("https://rfpdemo.velsof.com/api/registervendor", {
+        fetch(`${baseUrl}${EndPoints?.registervendor}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
@@ -93,13 +100,13 @@ const VendorRegistration = () => {
           .then((response) => response.json())
           .then((data) => {
             if (data.response === "success") {
-              alert("Registration successful!");
+              alert(alertMessage.Registration);
               navigate("/login");
             } else {
               alert(data.error);
             }
           })
-          .catch(() => alert("An error occurred. Please try again."));
+          .catch(() => alert(alertMessage.tryAgain));
       };
 
   return (

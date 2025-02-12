@@ -1,8 +1,13 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useState,useEffect } from 'react';
+import { postFetch } from '../../Methods/FetchMethods';
+import { alertMessage, clientSideValidation, EndPoints } from '../Constants/APIendpoints';
+/**
+ * Add category module
+ * @returns 
+ */
 const AddCategory = () => {
-    const token=localStorage.getItem("Token");
     const navigate=useNavigate();
     const [formData, setFormData] = useState({
         name: "", 
@@ -19,12 +24,12 @@ const AddCategory = () => {
      */
     const validate = () => {
         let newErrors = {};
-        if (!formData.name.trim()) newErrors.name = "Category name is required";
+        if (!formData.name.trim()) newErrors.name = clientSideValidation.category;
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
         };
         
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validate()) return;
         const data={
@@ -34,29 +39,22 @@ const AddCategory = () => {
          * Add Category
          * @param{name:text}
          * return{success/error}
-         */
-        fetch("https://rfpdemo.velsof.com/api/categories", {
-            method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}` 
-              },
-            body: JSON.stringify(data),
-        })
-            .then((response) => response.json())
-            .then((data) => {
-            if (data.response === "success") {
-                alert("Category Add successfully!");
-                navigate("/admin/categoryList");
+         */try{
+            const fetch=await postFetch(EndPoints?.addCategory,data)
+            const res=await fetch.json();
+            if (res?.response === "success") {
+                alert(alertMessage.category);
+                navigate("/admin/category-list");
             } else {
-                alert(data.error);
+                alert(res?.error);
             }
-            })
-            .catch(() => alert("An error occurred. Please try again."));
+          }catch(error){
+          alert(alertMessage.tryAgain);
+          }
         };
         const handleCancel = (e) => {
         e.preventDefault(); 
-        navigate("/admin/categoryList");
+        navigate("/admin/category-list");
         };
     return ( <div className="main-content">
     <div className="path">

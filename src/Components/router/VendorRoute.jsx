@@ -20,63 +20,26 @@ const VendorRoute = () => {
           <Home className="vendor-list" />
         </VendorLayout>
       }
-        //   {
-        //     <>
-        //       <ProtectedRoute>
-        //         <div className="container">
-        //           <SidebarVendor className="sidebar" />
-        //           <div className="main">
-        //             <Navbar className="navbar" userType={userName} />
-        //             <Home className="vendor-list" />
-        //           </div>
-        //         </div>
-        //       </ProtectedRoute>
-        //     </>
-        //   }
+    
         >
         </Route>
         <Route
-         path='/RFPQuotes' 
+         path='/rfp-quotes' 
         element={
              <VendorLayout>
              <VendorRFPQuotes className="vendor-list" />
            </VendorLayout>
         }
-        //   {
-        //     <>
-        //       <ProtectedRoute>
-        //         <div className="container">
-        //           <SidebarVendor className="sidebar" />
-        //           <div className="main">
-        //             <Navbar className="navbar" userType={userName} />
-        //             <VendorRFPQuotes className="vendor-list" />
-        //           </div>
-        //         </div>
-        //       </ProtectedRoute>
-        //     </>
-        //   }
+        
         >
         </Route>
-        <Route path='/RFPCreate' 
+        <Route path='/rfp-create' 
         element={
             <VendorLayout>
             <RFPCreateVendor className="vendor-list" />
           </VendorLayout>
        }
-        // element=
-        //   {
-        //     <>
-        //       <ProtectedRoute>
-        //         <div className="container">
-        //           <SidebarVendor className="sidebar" />
-        //           <div className="main">
-        //             <Navbar className="navbar" userType={userName} />
-        //             <RFPCreateVendor className="vendor-list" />
-        //           </div>
-        //         </div>
-        //       </ProtectedRoute>
-        //     </>
-        //   }
+        
         >
         </Route>
         </Routes>

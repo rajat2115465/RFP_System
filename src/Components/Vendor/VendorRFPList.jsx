@@ -2,10 +2,9 @@ import React from 'react'
 import { useState,useEffect } from 'react';
 import '../Admin/VendorList.css'
 import { Link } from 'react-router-dom';
+import { getFetch } from '../../Methods/FetchMethods';
+import { EndPoints, storage } from '../Constants/APIendpoints';
 const VendorRFPQuotes = () => {
-  const user_id=localStorage.getItem("user_id")
-  const token=localStorage.getItem("Token")
-
  const [rfpList, setrfpList] = useState([]);
        const fetchrfpList = async () => {
         /**
@@ -13,15 +12,7 @@ const VendorRFPQuotes = () => {
          * Authorization is Required(token)
          */
          try {
-           const response = await fetch(`https://rfpdemo.velsof.com/api/rfp/getrfp/${user_id}`,
-            {
-              method: "GET", 
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}` 
-              }
-            }
-           );
+          const response = await getFetch(`${EndPoints.vendorRFP}${storage.user_id}`);
            const data = await response.json();
            setrfpList(Object.values(data?.rfps));
          } catch (error) {
@@ -40,16 +31,9 @@ const VendorRFPQuotes = () => {
        * View the Quotes if Quotes is already applied
        * Get the Detail for particular RFP_ID
        */
-      const response = await fetch(`https://rfpdemo.velsof.com/api/rfp/quotes/${rfpId}`,{
-        method: "GET", 
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` 
-        }
-      }); 
+      const response = await getFetch(`${EndPoints.vendorQuote}${rfpId}`)
       const data = await response.json();
       setSelectedRfp({ ...data?.quote, quantity });
-      console.log(selectedRfp);
     } catch (error) {
       console.error("Error fetching RFP details:", error);
     }
@@ -90,20 +74,20 @@ const VendorRFPQuotes = () => {
             <td className='td-v' >{rfp?.minimum_price}</td>
             <td className='td-v' >{rfp?.maximum_price}</td>
             <td className='td-v' >
-              <span className={`status ${rfp.status?.toLowerCase()}`}>
-                {rfp.status?.toUpperCase()}
+              <span className={`status ${rfp.applied_status?.toLowerCase()}`}>
+                {rfp.rfp_status?.toUpperCase()}
               </span>
             </td>
             <td className='td-v' >
-              {rfp.status === "open" && (
+              {rfp?.rfp_status === "open" && rfp.applied_status != "applied" && (
                <>
                 {/* <button className="approve-btn">close</button> */}
-                <Link to="/RFPCreate">
+                <Link to="/rfp-create">
                 <button className="approve-btn" onClick={()=>{localStorage.setItem('rfp_id',rfp?.rfp_id);localStorage.setItem('quantity',rfp?.quantity)}}>apply</button>
                 </Link>
                 </>
               )}
-              {rfp.status === "applied" && (
+              {rfp.applied_status === "applied" && (
                <>
                 <button className="approve-btn" onClick={() => handleViewClick(rfp?.rfp_id,rfp?.quantity)} >view</button>
                 </>

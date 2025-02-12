@@ -10,8 +10,8 @@ const AuthRoute = () => {
     <Router>
       <Routes>
        <Route path='/login' element={<Login />}></Route>
-        <Route path='/vendorRegistration' element={<VendorRegistration />}></Route>
-        <Route path='/adminRegistration' element={<Admin />}></Route>
+        <Route path='/vendor-registration' element={<VendorRegistration />}></Route>
+        <Route path='/admin-registration' element={<Admin />}></Route>
         <Route path='/forget' element={<Forget />}></Route>
         <Route path='/reset' element={<Reset />}></Route>
         </Routes>

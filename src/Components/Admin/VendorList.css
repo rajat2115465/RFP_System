@@ -135,8 +135,9 @@ span{
     /* padding: 5px 10px; */
     text-align: center;
     border-radius: 25px;
+    width: 320px;
 }
-.status.approved,.applied {
+.status.approved,.open{
     background-color: green;
     color: white;
 }
